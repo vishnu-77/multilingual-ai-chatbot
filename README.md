@@ -66,7 +66,7 @@ ui.py       → User interface
 
 ## 🎥 Tutorial
 
-Full video tutorial: [Watch on YouTube](YOUR_VIDEO_LINK)
+Full video tutorial: [Watch on YouTube](https://www.youtube.com/watch?v=J8lGuK3Iv1E)
 
 ## 📝 License
 
