@@ -15,7 +15,7 @@ if "current_chat_id" not in st.session_state:
 # Sidebar
 with st.sidebar:
     language = st.selectbox("Language", [
-        "English", "Spanish", "French", "German", 
+        "Auto-detect", "English", "Spanish", "French", "German",
         "Hindi", "Japanese", "Chinese", "Arabic"
     ])
     
@@ -63,7 +63,20 @@ if prompt := st.chat_input("Type your message..."):
     
     # Get bot response
     chatbot = MultilingualChatbot()
-    response = chatbot.chat(prompt, language, current_messages)
+
+    # If user chose auto-detect, attempt to detect from the prompt locally
+    if language == "Auto-detect":
+        try:
+            detected = MultilingualChatbot.detect_language(prompt)
+            language_to_use = detected
+        except Exception as e:
+            # If detection fails, fallback to English and show a notice
+            st.warning(f"Language detection failed, defaulting to English: {e}")
+            language_to_use = "English"
+    else:
+        language_to_use = language
+
+    response = chatbot.chat(prompt, language_to_use, current_messages)
     
     # Show bot message
     current_messages.append({"role": "assistant", "content": response})

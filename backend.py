@@ -1,27 +1,101 @@
-# backend.py - Minimal LLM Backend
+"""backend.py - Minimal LLM Backend
+
+This module intentionally reads the Groq API key from the environment to
+avoid committing secrets to the repository. Set the environment variable
+`GROQ_API_KEY` before running the app (see README for an example).
+
+It also provides a lightweight automatic language detection helper so the
+UI can choose to auto-detect the user's language before contacting the
+Groq API (this lets detection run without needing the API key).
+"""
+
+import os
 from groq import Groq
+
+try:
+    from langdetect import detect, DetectorFactory, LangDetectException
+    DetectorFactory.seed = 0
+except Exception:
+    detect = None
+    LangDetectException = Exception
+
+
+def _map_lang_code_to_name(code: str) -> str:
+    """Map short language codes returned by langdetect to the UI language names."""
+    if not code:
+        return "English"
+
+    code = code.lower()
+    if code.startswith("en"):
+        return "English"
+    if code.startswith("es"):
+        return "Spanish"
+    if code.startswith("fr"):
+        return "French"
+    if code.startswith("de"):
+        return "German"
+    if code.startswith("hi"):
+        return "Hindi"
+    if code.startswith("ja"):
+        return "Japanese"
+    if code.startswith("zh"):
+        return "Chinese"
+    if code.startswith("ar"):
+        return "Arabic"
+
+    return "English"
+
 
 class MultilingualChatbot:
     def __init__(self):
-        self.client = Groq(api_key="API_KEY")
-    
-    def chat(self, message, language="English", history=[]):
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "GROQ_API_KEY environment variable is not set. "
+                "Set it before running the app (see README)."
+            )
+
+        self.client = Groq(api_key=api_key)
+
+    @staticmethod
+    def detect_language(text: str) -> str:
+        """Detect language using langdetect and return a UI-friendly name.
+
+        Falls back to English if detection fails or text is empty. Raises a
+        RuntimeError if langdetect is not installed.
+        """
+        if not text or not text.strip():
+            return "English"
+
+        if detect is None:
+            raise RuntimeError("langdetect is not installed. Install it with `pip install langdetect`.")
+
+        try:
+            code = detect(text)
+        except LangDetectException:
+            return "English"
+
+        return _map_lang_code_to_name(code)
+
+    def chat(self, message, language="English", history=None):
+        # Make history default to an empty list when not provided
+        if history is None:
+            history = []
+
         # Add system message for language
         messages = [
             {"role": "system", "content": f"Reply in {language}"}
         ]
-        
-        # Add chat history
+
+        # Add chat history and current message
         messages.extend(history)
-        
-        # Add current message
         messages.append({"role": "user", "content": message})
-        
+
         # Get response from Groq
         response = self.client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=messages,
-            temperature=0.7
+            temperature=0.7,
         )
-        
+
         return response.choices[0].message.content
