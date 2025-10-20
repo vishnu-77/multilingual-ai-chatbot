@@ -61,10 +61,7 @@ if prompt := st.chat_input("Type your message..."):
     with st.chat_message("user"):
         st.write(prompt)
     
-    # Get bot response
-    chatbot = MultilingualChatbot()
-
-    # If user chose auto-detect, attempt to detect from the prompt locally
+    # Decide language first (detection is local and does not require API key)
     if language == "Auto-detect":
         try:
             detected = MultilingualChatbot.detect_language(prompt)
@@ -75,6 +72,18 @@ if prompt := st.chat_input("Type your message..."):
             language_to_use = "English"
     else:
         language_to_use = language
+
+    # Now create the chatbot client (this requires GROQ_API_KEY). If the key
+    # is not set, show a friendly error instead of crashing.
+    try:
+        chatbot = MultilingualChatbot()
+    except RuntimeError as e:
+        st.error(
+            "GROQ_API_KEY is not set. Set your Groq API key in the app settings or as an environment variable."
+        )
+        st.info("See README.md for instructions on obtaining a Groq API key.")
+        # Stop execution so we don't attempt to call the API without a key.
+        st.stop()
 
     response = chatbot.chat(prompt, language_to_use, current_messages)
     
