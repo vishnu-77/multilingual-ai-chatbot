@@ -28,10 +28,36 @@ pip install groq streamlit
 
 ### 3. Add Your Key
 
-Open `backend.py` and paste your key:
-```python
-self.client = Groq(api_key="paste_your_key_here")
+This project reads the Groq API key from the `GROQ_API_KEY` environment
+variable. Do not hard-code your key into source files. Instead set the
+environment variable before running the app.
+
+Locally (PowerShell):
+```powershell
+$env:GROQ_API_KEY = "paste_your_key_here"
+streamlit run ui.py
 ```
+
+On Streamlit Cloud (or other hosting) set a secret / environment variable
+named `GROQ_API_KEY` in the app settings or deployment environment.
+In Streamlit Cloud: App Settings → Secrets → Add `GROQ_API_KEY` = "your_key"
+
+The app will show a friendly error if `GROQ_API_KEY` is not set.
+
+Local `.streamlit/secrets.toml` example
+--------------------------------------
+You can also store secrets locally during development by creating a
+`.streamlit/secrets.toml` file in the project root (don't commit this file).
+
+Example `./.streamlit/secrets.toml`:
+```toml
+# .streamlit/secrets.toml
+GROQ_API_KEY = "paste_your_key_here"
+```
+
+Streamlit will load the secrets into `st.secrets` at runtime, and the
+application will read from `st.secrets["GROQ_API_KEY"]` if the environment
+variable is not present.
 
 ### 4. Run
 

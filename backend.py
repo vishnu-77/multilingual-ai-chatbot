@@ -48,11 +48,20 @@ def _map_lang_code_to_name(code: str) -> str:
 
 class MultilingualChatbot:
     def __init__(self):
+        # First try the environment variable
         api_key = os.getenv("GROQ_API_KEY")
+
+        # If not set, and we're running inside Streamlit, try streamlit secrets
+        if not api_key:
+            try:
+                import streamlit as _st
+                api_key = _st.secrets.get("GROQ_API_KEY")
+            except Exception:
+                api_key = None
+
         if not api_key:
             raise RuntimeError(
-                "GROQ_API_KEY environment variable is not set. "
-                "Set it before running the app (see README)."
+                "GROQ_API_KEY is not set. Set GROQ_API_KEY as an environment variable or add it to Streamlit Secrets."
             )
 
         self.client = Groq(api_key=api_key)
