@@ -89,15 +89,3 @@ ui.py       → User interface
 **"Invalid API key"** → Get new key from console.groq.com
 
 **"Model error"** → Use: `llama-3.3-70b-versatile`
-
-## 🎥 Tutorial
-
-Full video tutorial: [Watch on YouTube](https://www.youtube.com/watch?v=J8lGuK3Iv1E)
-
-## 📝 License
-
-MIT License - Free to use for any project!
-
----
-
-⭐ Star this repo if you found it helpful!
